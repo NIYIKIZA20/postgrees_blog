@@ -1,9 +1,15 @@
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
 import { User } from "../models/userModel";
 import { ResponseService } from "../utils/response";
-import { generateToken } from "../utils/helper";
 import { UserInterface, UserLogin } from "../types/userInterface";
+import { hashPassword, comparePassword, generateToken } from "../utils/helper";
+import { AddUserInterface } from "../types/userInterface";
+
+
+interface IRequestUser extends Request {
+    body: AddUserInterface;
+}
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
@@ -58,14 +64,25 @@ export const getUser = async (req: Request, res: Response) => {
     }
 }
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: IRequestUser, res: Response) => {
     try {
         const { name, email, password, role } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
+
+        //  const userExists = await User.exists({ email });
+        // if (userExists) {
+        //     return ResponseService({
+        //         data: null,
+        //         status: 409,
+        //         success: false,
+        //         message: "User already exists",
+        //         res
+        //     });
+        // }
+       // const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
             name,
             email,
-            password: hashedPassword,
+            password: await await hashPassword(password),
             role
         });
         ResponseService<UserInterface>({
@@ -100,7 +117,7 @@ export const login = async (req: Request, res: Response) => {
                 res
             });
         }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await await comparePassword(password, user.password);
         if (!isPasswordValid) {
             return ResponseService({
                 data: null,
@@ -110,7 +127,7 @@ export const login = async (req: Request, res: Response) => {
                 res
             });
         }
-        const token = generateToken({ _id: user.id, role: user.role });
+        const token = generateToken({ _id: user?.id.toString(), email: user.email, role: user?.role });
         ResponseService<{ token: string }>({
             data: { token },
             status: 200,

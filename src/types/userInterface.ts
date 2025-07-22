@@ -9,7 +9,7 @@ export interface UserInterface {
     id?: number;
     name: string;
     email: string;
-    password?: string;
+    password: string;
     role: 'user' | 'admin';
     createdAt?: Date;
     updatedAt?: Date;
@@ -17,7 +17,7 @@ export interface UserInterface {
 
 export interface UserLogin {
     email: string;
-    password?: string;
+    password: string;
 }
 
 export interface AddUserInterface extends Omit<UserInterface, 'createdAt' | 'updatedAt'> {}

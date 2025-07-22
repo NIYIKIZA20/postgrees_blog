@@ -98,7 +98,7 @@ export const updateComment = async (req: Request, res: Response) => {
             });
         }
         const updatedComment = await Comment.findByPk(req.params.id);
-        ResponseService<CommentInterface>({
+        ResponseService({
             data: updatedComment,
             status: 200,
             success: true,

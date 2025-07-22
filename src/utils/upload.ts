@@ -46,6 +46,8 @@ export const storage = multer.diskStorage({
   destination: "uploads",
   filename: MulterFilterFile,
 });
+export const upload = multer({ storage });
+
 interface RequestParams extends Request{
     params:{
         filename:string
