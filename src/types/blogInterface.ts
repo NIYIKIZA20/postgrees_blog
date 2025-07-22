@@ -11,8 +11,8 @@ export interface BlogInterface{
     description: string
     //comments: { type: typeof mongoose.Types.ObjectId[]; ref: string; }
     //likes: { type: typeof mongoose.Types.ObjectId[]; ref: string; }
-    createdAt: NativeDate
-    updatedAt: NativeDate
+    // createdAt: NativeDate
+    // updatedAt: NativeDate
     deletedAt: null|string |undefined
 }
 export interface interfaceAddBlog extends Omit<BlogInterface,'id'>{}
