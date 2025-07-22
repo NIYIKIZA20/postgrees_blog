@@ -1,39 +1,22 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import { ResponseService } from "../utils/response";
-import { commentModel } from '../models/commentModel';
-import { IRequestUser } from '../middleware/authMiddleware';
-import { CommentInterface , AddCommentInterface, GetCommentsInterface} from '../types/commentInterface';
-import { userModel } from '../models/userModel';
-import { blogModel } from '../models/blogModel';
-
-interface IRequestComment extends IRequestUser {
-    body: AddCommentInterface;
-}
+import { IRequestUser } from "../middleware/authMiddleware";
+import { Comment } from "../models/commentModel";
+import { CommentInterface } from "../types/commentInterface";
 
 export const getAllComments = async (req: Request, res: Response) => {
     try {
-        const comments = await commentModel.find().populate('blog', 'title').populate('user', 'name')
-
-        if (!comments || comments.length === 0) {
-            return ResponseService({
-                data: null,
-                status: 404,
-                success: false,
-                message: "No comments found",
-                res
-            });
-        }
-
-        ResponseService<GetCommentsInterface>({
-            data: { comments },
+        const comments = await Comment.findAll();
+        ResponseService<CommentInterface[]>({
+            data: comments,
             status: 200,
             success: true,
             message: "Comments retrieved successfully",
             res
         });
-        
-    } catch (error) {
-        const { message, stack } = error as Error;
+    } catch (err) {
+        const { message, stack } = err as Error;
+        console.error('Error getting all comments:', { message, stack });
         ResponseService({
             data: { message, stack },
             status: 500,
@@ -43,63 +26,124 @@ export const getAllComments = async (req: Request, res: Response) => {
     }
 }
 
-export const addComment = async (req: IRequestComment, res: Response) => {
+export const getComment = async (req: Request, res: Response) => {
     try {
-        const blogId = req.params.id;
-        const { message } = req.body;
-        const _id = req?.user?._id as string
-        const user = await userModel.findOne({
-            _id
-        })
-
-        const blog = await blogModel.findById(blogId)
-        if(!blog) {
+        const comment = await Comment.findByPk(req.params.id);
+        if (!comment) {
             return ResponseService({
                 data: null,
                 status: 404,
                 success: false,
-                message: "Blog not found",
+                message: "Comment not found",
                 res
             });
         }
-
-        if (!user) {
-            return ResponseService({
-                data: null,
-                status: 404,
-                success: false,
-                message: "User not found",
-                res
-            });
-        }
-
-        const newComment = await commentModel.create({
-            blog: blogId,
-            user: _id,
-            message,
-            createdAt: new Date(),
-        });
-
-        await blogModel.findByIdAndUpdate(blogId, {
-            $push: { comments: newComment._id }
-        });
-
         ResponseService<CommentInterface>({
-            data: newComment,
-            status: 201,
+            data: comment,
+            status: 200,
             success: true,
-            message: 'Comment added successfully',
+            message: "Comment retrieved successfully",
             res
         });
-    } catch (error) {
-        const { message, stack } = error as Error;
-        console.log('Error adding comment:', { message, stack });
+    } catch (err) {
+        const { message, stack } = err as Error;
+        console.error('Error getting comment:', { message, stack });
         ResponseService({
             data: { message, stack },
             status: 500,
             success: false,
             res
         });
-        
+    }
+}
+
+export const createComment = async (req: IRequestUser, res: Response) => {
+    try {
+        const { content, blogId } = req.body;
+        const userId = req.user?._id as number;
+        const newComment = await Comment.create({
+            content,
+            blogId,
+            userId
+        });
+        ResponseService<CommentInterface>({
+            data: newComment,
+            status: 201,
+            success: true,
+            message: "Comment created successfully",
+            res
+        });
+    } catch (err) {
+        const { message, stack } = err as Error;
+        console.error('Error creating comment:', { message, stack });
+        ResponseService({
+            data: { message, stack },
+            status: 500,
+            success: false,
+            res
+        });
+    }
+}
+
+export const updateComment = async (req: Request, res: Response) => {
+    try {
+        const [updated] = await Comment.update(req.body, { where: { id: req.params.id } });
+        if (!updated) {
+            return ResponseService({
+                data: null,
+                status: 404,
+                success: false,
+                message: "Comment not found",
+                res
+            });
+        }
+        const updatedComment = await Comment.findByPk(req.params.id);
+        ResponseService<CommentInterface>({
+            data: updatedComment,
+            status: 200,
+            success: true,
+            message: "Comment updated successfully",
+            res
+        });
+    } catch (err) {
+        const { message, stack } = err as Error;
+        console.error('Error updating comment:', { message, stack });
+        ResponseService({
+            data: { message, stack },
+            status: 500,
+            success: false,
+            res
+        });
+    }
+}
+
+export const deleteComment = async (req: Request, res: Response) => {
+    try {
+        const deleted = await Comment.destroy({ where: { id: req.params.id } });
+        if (!deleted) {
+            return ResponseService({
+                data: null,
+                status: 404,
+                success: false,
+                message: "Comment not found",
+                res
+            });
+        }
+        ResponseService<any>({
+            data: null,
+            status: 200,
+            success: true,
+            message: "Comment deleted successfully",
+            res
+        });
+    } catch (err) {
+        const { message, stack } = err as Error;
+        console.error('Error deleting comment:', { message, stack });
+        ResponseService({
+            data: { message, stack },
+            status: 500,
+            success: false,
+            res
+        });
     }
 }

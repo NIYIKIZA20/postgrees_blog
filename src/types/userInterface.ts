@@ -6,14 +6,18 @@
 // }
 
 export interface UserInterface {
+    id?: number;
     name: string;
     email: string;
-    password: string;
-    isActive: boolean;
-    role: "admin" | "user";
-    gender: "male" | "female" | "other";
-    createdAt: NativeDate;
-    updatedAt: NativeDate;
+    password?: string;
+    role: 'user' | 'admin';
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface UserLogin {
+    email: string;
+    password?: string;
 }
 
 export interface AddUserInterface extends Omit<UserInterface, 'createdAt' | 'updatedAt'> {}

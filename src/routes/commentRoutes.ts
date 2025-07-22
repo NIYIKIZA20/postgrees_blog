@@ -1,17 +1,13 @@
 import { Router } from "express";
-import { addComment, getAllComments } from "../controllers/commentController";
-import { ValidationMiddleware } from "../middleware/validationMiddleware";
-import { AddCommentSchema, CommentParamsSchema } from "../schemas/commentSchema";
+import { getAllComments, getComment, createComment, updateComment, deleteComment } from "../controllers/commentController";
 import { authMiddleware } from "../middleware/authMiddleware";
 
-const commentRouter = Router()
+const commentRouter = Router();
 
-commentRouter.post('/comments/:id/message',
-    authMiddleware,
-    ValidationMiddleware({ type: 'params', schema: CommentParamsSchema , refType: 'joi' }),
-    ValidationMiddleware({ type: 'body', schema: AddCommentSchema, refType: 'joi' }),
-    addComment
-)
-commentRouter.get('/comments', authMiddleware, getAllComments)
+commentRouter.get('/comments', getAllComments);
+commentRouter.get('/comments/:id', getComment);
+commentRouter.post('/comments', authMiddleware, createComment);
+commentRouter.put('/comments/:id', authMiddleware, updateComment);
+commentRouter.delete('/comments/:id', authMiddleware, deleteComment);
 
-export {commentRouter}
+export { commentRouter };

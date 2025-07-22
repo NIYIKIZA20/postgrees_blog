@@ -1,22 +1,28 @@
-import mongoose from "mongoose";
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../config/database";
 import { LikeInterface } from "../types/likesInterface";
 
-export const likeModelSchema = new mongoose.Schema<LikeInterface>({
-    blog: {
-        type: mongoose.Types.ObjectId,
-        ref: "Blog"
-    },
-    user: {
-        type: mongoose.Types.ObjectId,
-        ref: "User"
-    },
-    createdAt: {
-        type: Date,
-        default: new Date()
-    },
-    updatedAt: {
-        type: Date
-    }
-});
+export class Like extends Model<LikeInterface> {
+    public id!: number;
+    public userId!: number;
+    public blogId!: number;
+}
 
-export const likeModel = mongoose.model<LikeInterface>("Like", likeModelSchema);
+Like.init({
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    blogId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    }
+}, {
+    sequelize,
+    modelName: 'Like'
+});

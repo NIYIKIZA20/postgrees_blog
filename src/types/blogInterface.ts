@@ -1,21 +1,25 @@
 
 
-export interface BlogInterface{
-    _id?:string
-    slug:string
-    title: string
-    //author: { type: typeof mongoose.Types.ObjectId; ref: string; }
-    content:string,
-    blog_image_url:string
-    isPublished: boolean
-    description: string
-    //comments: { type: typeof mongoose.Types.ObjectId[]; ref: string; }
-    //likes: { type: typeof mongoose.Types.ObjectId[]; ref: string; }
-    // createdAt: NativeDate
-    // updatedAt: NativeDate
-    deletedAt: null|string |undefined
+export interface BlogInterface {
+    id?: number;
+    title: string;
+    slug: string;
+    description: string;
+    content: string;
+    blog_image_url?: string;
+    author: number;
+    isPublished?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
-export interface interfaceAddBlog extends Omit<BlogInterface,'id'>{}
-export interface GetAllBlogs{
-    blogs:BlogInterface[]
+
+export interface interfaceAddBlog {
+    title: string;
+    description: string;
+    content: string;
+    isPublished: boolean;
+}
+
+export interface GetAllBlogs {
+    blogs: BlogInterface[];
 }

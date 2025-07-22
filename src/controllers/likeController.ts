@@ -1,58 +1,40 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import { ResponseService } from "../utils/response";
-import { likeModel } from '../models/likesModel';
-import { IRequestUser } from '../middleware/authMiddleware';
-import { blogModel } from '../models/blogModel';
-import { LikeInterface, AddLikeInterface, GetLikesInterface } from '../types/likesInterface';
+import { IRequestUser } from "../middleware/authMiddleware";
+import { Like } from "../models/likesModel";
 
-interface IRequestLike extends IRequestUser {
-    body: AddLikeInterface;
-}
-
-export const addLike = async (req: IRequestLike, res: Response) => {
+export const likeBlog = async (req: IRequestUser, res: Response) => {
     try {
-        const blog = req.params.id;
-        const _id = req?.user?._id as string
+        const { blogId } = req.body;
+        const userId = req.user?._id as number;
 
-        if (!blog) {
-            return ResponseService({
+        const existingLike = await Like.findOne({ where: { userId, blogId } });
+
+        if (existingLike) {
+            await existingLike.destroy();
+            return ResponseService<any>({
                 data: null,
-                success: false,
-                message: 'Blog ID is required',
-                status: 400,
+                status: 200,
+                success: true,
+                message: "Blog unliked successfully",
                 res
             });
         }
-        const existingLike = await likeModel.findOne({ blog: blog, user: _id });
 
-        if (existingLike) {
-            return ResponseService({
-                data: null,
-                success: false,
-                message: 'You have already liked this blog',
-                status: 400,
-                res,
-            });
-        }
-
-        const newLike = await likeModel.create({
-            blog: blog,
-            user: _id
+        const newLike = await Like.create({
+            blogId,
+            userId
         });
-
-        await blogModel.findByIdAndUpdate(blog, {
-            $push: { likes: newLike._id }
-        });
-
-        return ResponseService<LikeInterface>({
+        ResponseService<any>({
             data: newLike,
             status: 201,
             success: true,
-            message: "like added successfully",
+            message: "Blog liked successfully",
             res
         });
-    } catch (error) {
-        const { message, stack } = error as Error;
+    } catch (err) {
+        const { message, stack } = err as Error;
+        console.error('Error liking blog:', { message, stack });
         ResponseService({
             data: { message, stack },
             status: 500,
@@ -60,4 +42,4 @@ export const addLike = async (req: IRequestLike, res: Response) => {
             res
         });
     }
-};
+}

@@ -1,17 +1,12 @@
 import { Router } from "express";
-import { addUser, loginUser } from "../controllers/userController";
-import { ValidationMiddleware } from "../middleware/validationMiddleware";
-import { AddUserSchema, LoginUserSchema } from '../schemas/userSchema';
+import { getAllUsers, getUser, createUser, login } from "../controllers/userController";
+import { authMiddleware, checkAdmin } from "../middleware/authMiddleware";
 
 const userRouter = Router();
 
-userRouter.post('/users', 
-    ValidationMiddleware({ type: 'body', schema: AddUserSchema, refType: 'joi' }),
-    addUser
-);
+userRouter.get('/users', authMiddleware, checkAdmin, getAllUsers);
+userRouter.get('/users/:id', authMiddleware, checkAdmin, getUser);
+userRouter.post('/users', createUser);
+userRouter.post('/login', login);
 
-userRouter.post('/login', 
-    ValidationMiddleware({ type: 'body', schema: LoginUserSchema, refType: 'joi' }),
-    loginUser
-);
 export { userRouter };
